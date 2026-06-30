@@ -52,11 +52,13 @@ python scripts/prepare_datasets.py medical --max-samples 20000
 python scripts/train_medical_lora.py \
   --train-file artifacts/data/medical_train.jsonl \
   --validation-file artifacts/data/medical_validation.jsonl \
-  --epochs 1 --max-length 512
+  --epochs 1 --max-length 256 \
+  --max-train-samples 1000 --max-validation-samples 200
 ```
 
 Configuration : Phi-3.5 Mini Instruct, NF4 4-bit, LoRA `r=16`, alpha 32, dropout
-0,05, learning rate `2e-4`. Le prompt utilisateur est masqué dans les labels : la loss
+0,05, learning rate `2e-4`. Le run Colab court entraîne 1 000 conversations parmi les
+20 000 préparées afin de tenir sur une T4 pendant le hackathon. Le prompt utilisateur est masqué dans les labels : la loss
 porte uniquement sur la réponse du médecin.
 
 Le résultat est un adaptateur dans `artifacts/models/phi35-medical-lora/`. Il reste

@@ -24,6 +24,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--batch-size", type=int, default=2)
     parser.add_argument("--gradient-accumulation", type=int, default=8)
     parser.add_argument("--max-length", type=int, default=512)
+    parser.add_argument("--max-train-samples", type=int)
+    parser.add_argument("--max-validation-samples", type=int)
     parser.add_argument("--seed", type=int, default=42)
     return parser
 
@@ -87,6 +89,14 @@ def main() -> None:
         "json",
         data_files={"train": str(args.train_file), "validation": str(args.validation_file)},
     )
+    if args.max_train_samples:
+        dataset["train"] = dataset["train"].select(
+            range(min(args.max_train_samples, len(dataset["train"])))
+        )
+    if args.max_validation_samples:
+        dataset["validation"] = dataset["validation"].select(
+            range(min(args.max_validation_samples, len(dataset["validation"])))
+        )
 
     def tokenize(example):
         messages = example["messages"]
@@ -116,10 +126,8 @@ def main() -> None:
         warmup_ratio=0.03,
         lr_scheduler_type="cosine",
         logging_steps=10,
-        eval_strategy="steps",
-        eval_steps=100,
-        save_strategy="steps",
-        save_steps=100,
+        eval_strategy="epoch",
+        save_strategy="epoch",
         save_total_limit=2,
         load_best_model_at_end=True,
         metric_for_best_model="eval_loss",
