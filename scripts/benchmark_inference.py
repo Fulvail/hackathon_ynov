@@ -47,12 +47,14 @@ def main() -> None:
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
     prompts = json.loads(args.prompts.read_text(encoding="utf-8")) if args.prompts else DEFAULT_PROMPTS
-    tokenizer = AutoTokenizer.from_pretrained(args.base_model, trust_remote_code=True)
+    # Use Transformers' native Phi-3 implementation. The model repository's
+    # legacy remote code is incompatible with recent DynamicCache versions.
+    tokenizer = AutoTokenizer.from_pretrained(args.base_model, trust_remote_code=False)
     model = AutoModelForCausalLM.from_pretrained(
         args.base_model,
         device_map="auto",
         torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
-        trust_remote_code=True,
+        trust_remote_code=False,
     )
     if args.adapter:
         from peft import PeftModel
